@@ -153,9 +153,6 @@ public:
         return m_OverlayManager;
     }
 
-    // Called by push and pull decoders only after actual stream video arrives.
-    void notifyVideoReceived();
-
     void flushWindowEvents();
 
     void setShouldExit(bool quitHostApp = false);
@@ -405,7 +402,7 @@ private:
     // Graceful reconnect state
     bool m_ConnectionInterrupted;        // set by clConnectionTerminated for recoverable errors
     bool m_SuppressConnectionErrorDialog; // suppress error dialogs during reconnect attempts
-    std::atomic_bool m_HasReceivedVideo; // shared by decode and control threads
+    bool m_HasReceivedVideo;             // true after the first decode unit of the current connection
     int m_LastTerminationErrorCode;      // stored to show final error if reconnect gives up
 
     bool m_AsyncConnectionSuccess;
