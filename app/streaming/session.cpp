@@ -1053,9 +1053,17 @@ int Session::drSetup(int videoFormat, int width, int height, int frameRate, void
     return 0;
 }
 
+void Session::notifyVideoReceived()
+{
+    if (!m_HasReceivedVideo.exchange(true, std::memory_order_relaxed)) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                    "First stream video received; automatic reconnect is eligible");
+    }
+}
+
 int Session::drSubmitDecodeUnit(PDECODE_UNIT du)
 {
-    s_ActiveSession->m_HasReceivedVideo = true;
+    s_ActiveSession->notifyVideoReceived();
 
     // Use a lock since we'll be yanking this decoder out
     // from underneath the session when we initiate destruction.

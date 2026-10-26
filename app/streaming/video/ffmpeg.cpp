@@ -2262,6 +2262,11 @@ int FFmpegVideoDecoder::submitDecodeUnit(PDECODE_UNIT du)
     m_FrameInfoQueue.enqueue(*du);
 
     m_FramesIn++;
+    // Pull renderers bypass Session::drSubmitDecodeUnit entirely. Mark a
+    // real accepted stream packet here, never during decoder probing.
+    if (auto* session = Session::get()) {
+        session->notifyVideoReceived();
+    }
     return DR_OK;
 }
 
