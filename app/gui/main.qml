@@ -240,6 +240,18 @@ ApplicationWindow {
         z: -2
     }
 
+    // A delegate can disappear while a session is starting. Keep the segue's
+    // creation context in the main window so its callbacks retain access to
+    // navigation controls and the persistent error dialog.
+    Component {
+        id: streamSegueComponent
+        StreamSegue {}
+    }
+
+    function createStreamSegue(properties) {
+        return streamSegueComponent.createObject(stackView, properties)
+    }
+
     StackView {
         id: stackView
         anchors.fill: parent
