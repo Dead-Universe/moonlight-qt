@@ -1,5 +1,8 @@
 #include "streaming/clipboardsync.h"
 #include "streaming/clipboardipc.h"
+#ifdef Q_OS_WIN
+#include "fileclipboardsync.h"
+#endif
 
 #include <QByteArray>
 #include <QCoreApplication>
@@ -126,6 +129,11 @@ private:
             m_ClipboardEngine->setHostContext(context);
         }
 
+#ifdef Q_OS_WIN
+        delete m_FileClipboard;
+        m_FileClipboard = new FileClipboardSync(context, this);
+        connect(m_ClipboardEngine, &ClipboardSync::aboutToApplyRemoteClipboard, m_FileClipboard, &FileClipboardSync::clearRemote);
+#endif
         writeProtocolLine(ClipboardIpc::encodeReady(sequence));
     }
 
@@ -146,6 +154,9 @@ private:
     }
 
     ClipboardSync* m_ClipboardEngine = nullptr;
+#ifdef Q_OS_WIN
+    FileClipboardSync* m_FileClipboard = nullptr;
+#endif
     quint32 m_NextSequence = 1;
 };
 

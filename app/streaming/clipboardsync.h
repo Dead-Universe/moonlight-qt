@@ -135,6 +135,7 @@ signals:
     // owner decides how to deliver the frame, which lets the clipboard engine
     // run in a helper process without direct access to the Limelight session.
     void outboundFrame(QByteArray frame);
+    void aboutToApplyRemoteClipboard();
 
 private slots:
 #ifdef Q_OS_MACOS

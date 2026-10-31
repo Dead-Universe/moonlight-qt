@@ -401,6 +401,7 @@ void ClipboardSync::applyInboundText(const QByteArray& payload)
         return;
     }
 
+    emit aboutToApplyRemoteClipboard();
     if (hasFileReferences(cb->mimeData())) {
         ClipboardLog::debug("ClipboardSync: preserving local file clipboard; inbound text ignored");
         return;
@@ -424,6 +425,7 @@ void ClipboardSync::applyInboundPng(const QByteArray& payload)
         return;
     }
 
+    emit aboutToApplyRemoteClipboard();
     if (hasFileReferences(cb->mimeData())) {
         ClipboardLog::debug("ClipboardSync: preserving local file clipboard; inbound PNG ignored");
         return;
@@ -1254,6 +1256,7 @@ void ClipboardSync::applyCompound(const QByteArray& text, const QByteArray& png)
         return;
     }
 
+    emit aboutToApplyRemoteClipboard();
     if (hasFileReferences(cb->mimeData())) {
         ClipboardLog::debug("ClipboardSync: preserving local file clipboard; inbound compound ignored");
         return;
