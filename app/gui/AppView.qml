@@ -680,8 +680,7 @@ CenteredGridView {
                 return
             }
 
-            var component = Qt.createComponent("StreamSegue.qml")
-            var segue = component.createObject(stackView, {
+            var segue = window.createStreamSegue({
                                                    "appName": model.name,
                                                    "boxArtUrl": model.boxart,
                                                    "session": appModel.createSessionForApp(index, selectedDisplayTarget),
