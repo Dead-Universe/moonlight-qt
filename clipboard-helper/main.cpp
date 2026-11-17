@@ -1,5 +1,8 @@
 #include "streaming/clipboardsync.h"
 #include "streaming/clipboardipc.h"
+#ifdef Q_OS_WIN
+#include "fileclipboardsync.h"
+#endif
 
 #include <QByteArray>
 #include <QCoreApplication>
@@ -243,15 +246,33 @@ private:
             // onto the writer directly (the writer owns stdout).
             connect(engine, &ClipboardSync::outboundFrame, this,
                     &ClipboardHelperController::sendLocalFrame, Qt::DirectConnection);
-            postToEngine([engine] { engine->start(); });
+            postToEngine([engine, context] {
+#ifdef Q_OS_WIN
+                configureFileClipboard(engine, context);
+#endif
+                engine->start();
+            });
         }
         else {
-            postToEngine(
-                [engine = m_ClipboardEngine, context] { engine->setHostContext(context); });
+            postToEngine([engine = m_ClipboardEngine, context] {
+                engine->setHostContext(context);
+#ifdef Q_OS_WIN
+                configureFileClipboard(engine, context);
+#endif
+            });
         }
-
         writeProtocolLine(ClipboardIpc::encodeReady(sequence));
     }
+
+#ifdef Q_OS_WIN
+    static void configureFileClipboard(ClipboardSync* engine, const ClipboardSyncHostContext& context)
+    {
+        // Clear a remote file offer on the engine thread before applying text or an image.
+        delete engine->findChild<FileClipboardSync*>(QString(), Qt::FindDirectChildrenOnly);
+        auto* files = new FileClipboardSync(context, engine);
+        connect(engine, &ClipboardSync::aboutToApplyRemoteClipboard, files, &FileClipboardSync::clearRemote);
+    }
+#endif
 
     void sendLocalFrame(const QByteArray& frame)
     {
