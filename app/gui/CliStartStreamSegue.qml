@@ -15,8 +15,7 @@ Item {
     }
 
     function onSessionCreated(appName, session) {
-        var component = Qt.createComponent("StreamSegue.qml")
-        var segue = component.createObject(stackView, {
+        var segue = window.createStreamSegue({
             "appName": appName,
             "session": session,
             "quitAfter": true
