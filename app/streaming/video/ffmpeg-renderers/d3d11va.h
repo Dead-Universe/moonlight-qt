@@ -5,6 +5,7 @@
 #include <d3d11_4.h>
 #include <dxgi1_6.h>
 #include <CGuid.h>
+#include <mutex>
 #include "streaming/video/videoenhancement.h"
 #include "amfsession.h"
 
@@ -101,6 +102,8 @@ private:
     UINT64 m_D2RFenceValue;
     Microsoft::WRL::ComPtr<ID3D11Fence> m_DecodeR2DFence, m_RenderR2DFence;
     UINT64 m_R2DFenceValue;
+    // Acquire before m_ContextLock to serialize render, HDR and window updates.
+    std::mutex m_RenderLock;
     SDL_mutex* m_ContextLock;
     bool m_BindDecoderOutputTextures;
     bool m_UseFenceHack;

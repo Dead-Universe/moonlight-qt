@@ -814,6 +814,10 @@ bool D3D11VARenderer::prepareDecoderContext(AVCodecContext* context, AVDictionar
 
 bool D3D11VARenderer::prepareDecoderContextInGetFormat(AVCodecContext *context, AVPixelFormat pixelFormat)
 {
+    std::lock_guard<std::mutex> renderLock(m_RenderLock);
+    lockContext(this);
+    const auto contextUnlock = qScopeGuard([this] { unlockContext(this); });
+
     // Create a new hardware frames context suitable for decoding our specified format
     av_buffer_unref(&context->hw_frames_ctx);
     int err = avcodec_get_hw_frames_parameters(context, m_HwDeviceContext, pixelFormat, &context->hw_frames_ctx);
@@ -861,6 +865,8 @@ bool D3D11VARenderer::prepareDecoderContextInGetFormat(AVCodecContext *context, 
 
 void D3D11VARenderer::renderFrame(AVFrame* frame)
 {
+    std::lock_guard<std::mutex> renderLock(m_RenderLock);
+
     if (m_RenderResetPending) {
         return;
     }
@@ -1405,6 +1411,8 @@ bool D3D11VARenderer::createOverlayVertexBuffer(Overlay::OverlayType type, int w
 
 bool D3D11VARenderer::notifyWindowChanged(PWINDOW_STATE_CHANGE_INFO stateInfo)
 {
+    std::lock_guard<std::mutex> renderLock(m_RenderLock);
+
     if (stateInfo->stateChangeFlags & WINDOW_STATE_CHANGE_DISPLAY) {
         int adapterIndex, outputIndex;
         if (!SDL_DXGIGetOutputInfo(stateInfo->displayIndex,
@@ -2191,6 +2199,10 @@ bool D3D11VARenderer::needsTestFrame()
 
 void D3D11VARenderer::setHdrMode(bool enabled)
 {
+    std::lock_guard<std::mutex> renderLock(m_RenderLock);
+    lockContext(this);
+    const auto contextUnlock = qScopeGuard([this] { unlockContext(this); });
+
     auto clearVideoProcessorOutputHdrMetadata = [this]() {
         if (m_VideoProcessor && m_VideoContext) {
             m_VideoContext->VideoProcessorSetOutputHDRMetaData(
